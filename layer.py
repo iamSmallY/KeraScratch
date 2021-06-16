@@ -39,44 +39,6 @@ class Layer(metaclass=ABCMeta):
         pass
 
 
-class ReLULayer(Layer):
-    """ReLU 层。"""
-
-    def forward(self, x: Tensor) -> Tensor:
-        y = Tensor((x.value > 0).astype(np.float32) * x.value)
-        y.append_bp_cache(self.backward, {'x': x})
-        return y
-
-    @staticmethod
-    def backward(x: Tensor, y: Tensor) -> None:
-        x.grad += y.grad * (y.value > 0).astype(np.float32)
-
-
-class SigmoidLayer(Layer):
-    """Sigmoid 层。"""
-
-    def forward(self, x: Tensor) -> Tensor:
-        y = Tensor(self.__sigmoid(x.value))
-        y.append_bp_cache(self.backward, {'x': x})
-        return y
-
-    @staticmethod
-    def backward(x: Tensor, y: Tensor) -> None:
-        x.grad += y.grad * SigmoidLayer.__sigmoid(x.value) * (1 - SigmoidLayer.__sigmoid(x.value))
-
-    @staticmethod
-    def __sigmoid(x: np.ndarray) -> np.ndarray:
-        """计算 sigmoid 值方法。
-
-        Args:
-            x: 待计算的张量
-
-        Returns:
-            sigmoid(x)
-        """
-        return 1 / (1 + np.exp(-x))
-
-
 class LinearLayer(Layer):
     """全连接层。"""
     def __init__(self, in_dim: int, out_dim: int) -> None:
@@ -102,3 +64,53 @@ class LinearLayer(Layer):
         x.grad += np.dot(y.grad, self.__w.value.T)
         self.__w.grad += np.dot(x.value.T, y.grad)
         self.__b.grad += y.grad
+
+
+class ActivationLayer(Layer):
+    """激活函数层抽象类
+
+    扩展了 Layer 类，增加了激活函数层所需要用到的计算激活函数的方法。
+    """
+    @staticmethod
+    @abstractmethod
+    def function(x: Tensor) -> Tensor:
+        """计算张量经过激活函数后的值"""
+        pass
+
+    @abstractmethod
+    def forward(self, x: Tensor) -> Tensor:
+        pass
+
+    @abstractmethod
+    def backward(self, x: Tensor, y: Tensor) -> None:
+        pass
+
+
+class ReLULayer(ActivationLayer):
+    """ReLU 层。"""
+    @staticmethod
+    def function(x: Tensor) -> Tensor:
+        return Tensor((x.value > 0).astype(np.float32) * x.value)
+
+    def forward(self, x: Tensor) -> Tensor:
+        y = self.function(x)
+        y.append_bp_cache(self.backward, {'x': x})
+        return y
+
+    def backward(self, x: Tensor, y: Tensor) -> None:
+        x.grad += y.grad * (y.value > 0).astype(np.float32)
+
+
+class SigmoidLayer(ActivationLayer):
+    """Sigmoid 层。"""
+    @staticmethod
+    def function(x: Tensor) -> Tensor:
+        return Tensor(1 / (1 + np.exp(-x.value)))
+
+    def forward(self, x: Tensor) -> Tensor:
+        y = self.function(x)
+        y.append_bp_cache(self.backward, {'x': x})
+        return y
+
+    def backward(self, x: Tensor, y: Tensor) -> None:
+        x.grad += y.grad * self.function(x).value * (1 - self.function(x).value)
