@@ -5,16 +5,16 @@ import numpy as np
 from tensor import Tensor
 
 
-class Layer(metaclass=ABCMeta):
-    """神经网络层抽象类。
+class Operator(metaclass=ABCMeta):
+    """神经网络算子抽象类。
 
-    对于一个神经网络中的某一层而言，仅需要一个前向传播，以及一个反向传播方法。
+    对于一个神经网络中的某一算子而言，仅需要一个前向传播，以及一个反向传播方法。
     """
     @abstractmethod
     def forward(self, x: Tensor) -> Tensor:
         """计算前向传播方法。
 
-        将张量 x 通过该层进行前向传播，计算其结果，并返回结果张量。
+        将张量 x 通过该算子进行前向传播，计算其结果，并返回结果张量。
 
         Args:
             x: 用于计算前向传播的张量
@@ -29,7 +29,7 @@ class Layer(metaclass=ABCMeta):
     def backward(x: Tensor, y: Tensor) -> None:
         """计算反向传播方法。
 
-        根据后一层张量 y 的值，更新张量 x 的梯度值。\n
+        根据算子计算得到的张量 y 的值，更新张量 x 的梯度值。\n
         该函数应用于在前向传播时被放入张量的 bp_cache 中。
 
         Args:
@@ -39,17 +39,17 @@ class Layer(metaclass=ABCMeta):
         pass
 
 
-class LinearLayer(Layer):
+class LinearOperator(Operator):
     """全连接层。"""
     def __init__(self, in_dim: int, out_dim: int) -> None:
         """初始化全连接层方法。
 
-        全连接层计算方式为 y = wx + b.\n
+        全连接算子计算方式为 y = wx + b.\n
         而对于张量 x 和 y，它们的维度可以是不同的，所以要利用这两个张量的维度来决定 w 和 b 的形状。
 
         Args:
-            in_dim: x 张量的维度
-            out_dim: y 张量的维度
+            in_dim: 将被输入的张量的维度
+            out_dim: 需要张量的维度
         """
         self.__out_dim = out_dim
         self.__w = Tensor(np.random.randn(in_dim, out_dim) * 0.1)
@@ -66,10 +66,10 @@ class LinearLayer(Layer):
         self.__b.grad += y.grad
 
 
-class ActivationLayer(Layer):
-    """激活函数层抽象类
+class ActivationOperator(Operator):
+    """激活函数算子抽象类
 
-    扩展了 Layer 类，增加了激活函数层所需要用到的计算激活函数的方法。
+    扩展了 Operator 类，增加了激活函数算子所需要用到的计算激活函数的方法。
     """
     @staticmethod
     @abstractmethod
@@ -86,8 +86,8 @@ class ActivationLayer(Layer):
         pass
 
 
-class ReLULayer(ActivationLayer):
-    """ReLU 层。"""
+class ReLUOperator(ActivationOperator):
+    """ReLU 算子。"""
     @staticmethod
     def function(x: Tensor) -> Tensor:
         return Tensor((x.value > 0).astype(np.float32) * x.value)
@@ -101,8 +101,8 @@ class ReLULayer(ActivationLayer):
         x.grad += y.grad * (y.value > 0).astype(np.float32)
 
 
-class SigmoidLayer(ActivationLayer):
-    """Sigmoid 层。"""
+class SigmoidOperator(ActivationOperator):
+    """Sigmoid 算子。"""
     @staticmethod
     def function(x: Tensor) -> Tensor:
         return Tensor(1 / (1 + np.exp(-x.value)))
