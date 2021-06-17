@@ -127,28 +127,32 @@ class Sequential(Model):
             temp_train_acc, temp_train_loss = [], []
             temp_val_acc, temp_val_loss = [], []
             for data in train_data:
-                x, y = data
-                x, y = Tensor(x), Tensor(y)
-                acc, loss = self.__calculate(x, y)
-                temp_train_acc.append(acc)
-                temp_train_loss.append(loss.value[0])
+                loss = self.__epoch(data, temp_train_acc, temp_train_loss)
                 loss.backward()
                 self.__optimizer.step()
+
             if val_data is not None:
                 for data in val_data:
-                    x, y = data
-                    x, y = Tensor(x), Tensor(y)
-                    acc, loss = self.__calculate(x, y)
-                    temp_val_acc.append(acc)
-                    temp_val_loss.append(loss.value[0])
-            res['train']['accuracy'].append(sum(temp_train_acc) / len(temp_train_acc))
+                    self.__epoch(data, temp_val_acc, temp_val_loss)
+
+            res['train']['accuracy'].append(np.mean(np.array(temp_train_acc)))
             res['train']['loss'].append(np.mean(np.array(temp_train_loss)))
             if val_data is not None:
-                res['val']['accuracy'].append(sum(temp_val_acc) / len(temp_val_acc))
+                res['val']['accuracy'].append(np.mean(np.array(temp_val_acc)))
                 res['val']['loss'].append(np.mean(np.array(temp_val_loss)))
         return res
 
     def predict(self, data: Tensor) -> Tensor:
+        """利用模型预测结果方法。
+
+        利用现有的模型，对传入的张量进行评估（分类等）。
+
+        Args:
+            data: 传入的张量
+
+        Returns:
+            预测结果张量。
+        """
         assert self.__loss is not None
         assert self.__optimizer is not None
         pred = self.__forward(data)
@@ -158,8 +162,24 @@ class Sequential(Model):
             return Tensor(np.argmax(pred))
         return pred
 
-    def evaluate(self, data: List[List[Tensor]]) -> Dict[str, float]:
-        pass
+    def evaluate(self, data: List[List[np.ndarray]]) -> Dict[str, np.ndarray]:
+        """评估模型方法。
+
+        利用传入的数据集，获取模型在该数据集上的准确率与损失值，从而对模型进行评估。
+
+        Args:
+            data: 用于评估的数据集
+
+        Returns:
+            模型预测该数据集的准确率与损失值。
+        """
+        acc_list, loss_list = [], []
+        for d in data:
+            self.__epoch(d, acc_list, loss_list)
+        return {
+            'accuracy': np.mean(np.array(acc_list)),
+            'loss': np.mean(np.array(loss_list))
+        }
 
     def add(self, operator: Operator) -> None:
         """添加算子方法。
@@ -184,14 +204,19 @@ class Sequential(Model):
     def __backward(y: Tensor) -> None:
         y.backward()
 
-    def __calculate(self, x: Tensor, y: Tensor) -> Tuple[int, Tensor]:
-        """计算损失值方法。"""
+    def __epoch(self, data: List[np.ndarray], acc_list: List[int], loss_list: List[Tensor]) -> Tensor:
+        """计算一次迭代方法。"""
+        x, y = data
+        x, y = Tensor(x), Tensor(y)
         pred = self.__forward(x)
         if isinstance(self.__loss, CrossEntropyLoss):
             predict = np.argmax(CrossEntropyLoss.softmax(pred))
         else:
             predict = pred.value[0]
-        acc = 1 if y.value[0] == predict else 0
         loss = self.__loss.calculate(pred, y)
+
+        acc_list.append(1 if y.value[0] == predict else 0)
+        loss_list.append(loss.value[0])
+
         pred.zero_grad()
-        return acc, loss
+        return loss
