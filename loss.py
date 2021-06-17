@@ -36,7 +36,7 @@ class Loss(metaclass=ABCMeta):
 class CrossEntropyLoss(Loss):
     """交叉熵损失函数类。
 
-    利用输出层的 softmax 结果计算交叉熵损失函数值。
+    内部整合了 softmax 函数，便于计算，在使用模型时最后一层无需 softmax 函数。
     """
 
     @staticmethod
@@ -61,7 +61,7 @@ class CrossEntropyLoss(Loss):
         return y
 
     @staticmethod
-    def backward(**kwargs) -> None:
+    def backward(**kwargs: Tensor) -> None:
         x = kwargs['x']
         target = kwargs['target']
         x.grad = CrossEntropyLoss.softmax(x)

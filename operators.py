@@ -38,7 +38,7 @@ class Operator(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def backward(**kwargs) -> None:
+    def backward(**kwargs: Tensor) -> None:
         """计算反向传播方法。
 
         根据算子计算得到的张量 y 的值，更新张量 x 的梯度值。\n
@@ -101,7 +101,7 @@ class ActivationOperator(Operator):
 
     @staticmethod
     @abstractmethod
-    def backward(**kwargs) -> None:
+    def backward(**kwargs: Tensor) -> None:
         pass
 
 
@@ -137,7 +137,7 @@ class SigmoidOperator(ActivationOperator):
         return y
 
     @staticmethod
-    def backward(**kwargs) -> None:
+    def backward(**kwargs: Tensor) -> None:
         y = kwargs['y']
         x = kwargs['x']
         x.grad += y.grad * SigmoidOperator.function(x).value * (1 - SigmoidOperator.function(x).value)
