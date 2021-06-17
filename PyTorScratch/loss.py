@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
-from tensor import Tensor
+from PyTorScratch.tensor import Tensor
 
 
 class Loss(metaclass=ABCMeta):

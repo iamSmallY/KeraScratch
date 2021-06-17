@@ -1,13 +1,13 @@
 """模型模块"""
 from abc import ABCMeta, abstractmethod
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 
-from loss import Loss, CrossEntropyLoss
-from operators import Operator
-from optimizers import Optimizer
-from tensor import Tensor
+from PyTorScratch.loss import Loss, CrossEntropyLoss
+from PyTorScratch.operators.operators import Operator
+from PyTorScratch.optimizers import Optimizer
+from PyTorScratch.tensor import Tensor
 
 
 class Model(metaclass=ABCMeta):
