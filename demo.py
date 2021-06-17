@@ -18,7 +18,7 @@ md = model.Sequential([
     operators.SigmoidOperator(),
     operators.LinearOperator(2, 2)
 ])
-md.compile(loss.CrossEntropyLoss(), optimizers.SGD(md.args(), learning_rate=1e-1    , momentum=0))
+md.compile(loss.CrossEntropyLoss(), optimizers.SGD(md.args(), learning_rate=1e-1, momentum=0))
 
 history = md.fit(train_data, epoch=1000)
-print(history['train']['loss'])
+print(history['train'])

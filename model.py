@@ -1,10 +1,10 @@
 """模型模块"""
 from abc import ABCMeta, abstractmethod
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-from loss import Loss
+from loss import Loss, CrossEntropyLoss
 from operators import Operator
 from optimizers import Optimizer
 from tensor import Tensor
@@ -110,6 +110,8 @@ class Sequential(Model):
 
     def fit(self, train_data: List[List[np.ndarray]], val_data: List[List[np.ndarray]] = None,
             epoch: int = 5) -> Dict[str, Dict[str, List[float]]]:
+        assert self.__loss is not None
+        assert self.__optimizer is not None
         res = {
             'train': {
                 'accuracy': [],
@@ -122,27 +124,39 @@ class Sequential(Model):
                 'loss': []
             }
         for _ in range(epoch):
-            temp_train_loss = []
-            temp_val_loss = []
+            temp_train_acc, temp_train_loss = [], []
+            temp_val_acc, temp_val_loss = [], []
             for data in train_data:
                 x, y = data
                 x, y = Tensor(x), Tensor(y)
-                train_loss = self.__calculate(x, y)
-                temp_train_loss.append(train_loss.value[0])
-                train_loss.backward()
+                acc, loss = self.__calculate(x, y)
+                temp_train_acc.append(acc)
+                temp_train_loss.append(loss.value[0])
+                loss.backward()
                 self.__optimizer.step()
             if val_data is not None:
                 for data in val_data:
                     x, y = data
                     x, y = Tensor(x), Tensor(y)
-                    temp_val_loss.append(self.__calculate(x, y).value[0])
+                    acc, loss = self.__calculate(x, y)
+                    temp_val_acc.append(acc)
+                    temp_val_loss.append(loss.value[0])
+            res['train']['accuracy'].append(sum(temp_train_acc) / len(temp_train_acc))
             res['train']['loss'].append(np.mean(np.array(temp_train_loss)))
             if val_data is not None:
+                res['val']['accuracy'].append(sum(temp_val_acc) / len(temp_val_acc))
                 res['val']['loss'].append(np.mean(np.array(temp_val_loss)))
         return res
 
     def predict(self, data: Tensor) -> Tensor:
-        pass
+        assert self.__loss is not None
+        assert self.__optimizer is not None
+        pred = self.__forward(data)
+        if isinstance(self.__optimizer, CrossEntropyLoss):
+            # 对于交叉熵损失函数，预测结果需要添加一个 softmax 运算
+            pred = CrossEntropyLoss.softmax(pred)
+            return Tensor(np.argmax(pred))
+        return pred
 
     def evaluate(self, data: List[List[Tensor]]) -> Dict[str, float]:
         pass
@@ -170,9 +184,14 @@ class Sequential(Model):
     def __backward(y: Tensor) -> None:
         y.backward()
 
-    def __calculate(self, x: Tensor, y: Tensor) -> Tensor:
+    def __calculate(self, x: Tensor, y: Tensor) -> Tuple[int, Tensor]:
         """计算损失值方法。"""
         pred = self.__forward(x)
+        if isinstance(self.__loss, CrossEntropyLoss):
+            predict = np.argmax(CrossEntropyLoss.softmax(pred))
+        else:
+            predict = pred.value[0]
+        acc = 1 if y.value[0] == predict else 0
         loss = self.__loss.calculate(pred, y)
         pred.zero_grad()
-        return loss
+        return acc, loss
