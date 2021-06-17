@@ -7,6 +7,7 @@ from tensor import Tensor
 
 class Loss(metaclass=ABCMeta):
     """损失函数抽象类。"""
+
     @staticmethod
     @abstractmethod
     def calculate(x: Tensor, target: Tensor) -> Tensor:
@@ -23,12 +24,11 @@ class Loss(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def backward(x: Tensor, target: Tensor) -> None:
+    def backward(**kwargs) -> None:
         """计算损失函数反向传播值。
 
         Args:
-            x: 当前层张量
-            target: 损失函数结果张量
+            kwargs: 反向传播函数所用参数
         """
         pass
 
@@ -38,8 +38,9 @@ class CrossEntropyLoss(Loss):
 
     利用输出层的 softmax 结果计算交叉熵损失函数值。
     """
+
     @staticmethod
-    def softmax(x: Tensor) -> Tensor:
+    def softmax(x: Tensor) -> np.ndarray:
         """计算 softmax 函数方法。
 
         Args:
@@ -53,13 +54,15 @@ class CrossEntropyLoss(Loss):
 
     @staticmethod
     def calculate(x: Tensor, target: Tensor) -> Tensor:
-        s = CrossEntropyLoss.softmax(x).value
-        l = -np.log(s[0][target.value[0]])
-        y = Tensor(np.array([l]))
+        s = CrossEntropyLoss.softmax(x)
+        loss = -np.log(s[0][target.value[0]])
+        y = Tensor(np.array([loss]))
         y.append_bp_cache(CrossEntropyLoss.backward, {'x': x, 'target': target})
         return y
 
     @staticmethod
-    def backward(x: Tensor, target: Tensor) -> None:
+    def backward(**kwargs) -> None:
+        x = kwargs['x']
+        target = kwargs['target']
         x.grad = CrossEntropyLoss.softmax(x)
         x.grad[0][target.value[0]] -= 1

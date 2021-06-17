@@ -10,6 +10,18 @@ class Operator(metaclass=ABCMeta):
 
     对于一个神经网络中的某一算子而言，仅需要一个前向传播，以及一个反向传播方法。
     """
+
+    def args(self):
+        """获取模型全部参数方法。
+
+        参数即为张量的梯度，于是递归获取每个算子对应的梯度即可。
+        """
+        res = []
+        for name in vars(self).keys():
+            if isinstance(getattr(self, name), Tensor):
+                res.append(getattr(self, name))
+        return res
+
     @abstractmethod
     def forward(self, x: Tensor) -> Tensor:
         """计算前向传播方法。
@@ -26,21 +38,21 @@ class Operator(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def backward(x: Tensor, y: Tensor) -> None:
+    def backward(**kwargs) -> None:
         """计算反向传播方法。
 
         根据算子计算得到的张量 y 的值，更新张量 x 的梯度值。\n
         该函数应用于在前向传播时被放入张量的 bp_cache 中。
 
         Args:
-            x: 待梯度更新的张量
-            y: 后一层与 x 对应的张量
+            kwargs: 反向传播所用参数
         """
         pass
 
 
 class LinearOperator(Operator):
     """全连接层。"""
+
     def __init__(self, in_dim: int, out_dim: int) -> None:
         """初始化全连接层方法。
 
@@ -60,10 +72,15 @@ class LinearOperator(Operator):
         y.append_bp_cache(self.backward, {'x': x, 'w': self.__w, 'b': self.__b})
         return y
 
-    def backward(self, x: Tensor, y: Tensor) -> None:
-        x.grad += np.dot(y.grad, self.__w.value.T)
-        self.__w.grad += np.dot(x.value.T, y.grad)
-        self.__b.grad += y.grad
+    @staticmethod
+    def backward(**kwargs: Tensor) -> None:
+        y = kwargs['y']
+        x = kwargs['x']
+        w = kwargs['w']
+        b = kwargs['b']
+        x.grad += np.dot(y.grad, w.value.T)
+        w.grad += np.dot(x.value.T, y.grad)
+        b.grad += y.grad
 
 
 class ActivationOperator(Operator):
@@ -71,6 +88,7 @@ class ActivationOperator(Operator):
 
     扩展了 Operator 类，增加了激活函数算子所需要用到的计算激活函数的方法。
     """
+
     @staticmethod
     @abstractmethod
     def function(x: Tensor) -> Tensor:
@@ -81,13 +99,15 @@ class ActivationOperator(Operator):
     def forward(self, x: Tensor) -> Tensor:
         pass
 
+    @staticmethod
     @abstractmethod
-    def backward(self, x: Tensor, y: Tensor) -> None:
+    def backward(**kwargs) -> None:
         pass
 
 
 class ReLUOperator(ActivationOperator):
     """ReLU 算子。"""
+
     @staticmethod
     def function(x: Tensor) -> Tensor:
         return Tensor((x.value > 0).astype(np.float32) * x.value)
@@ -97,12 +117,16 @@ class ReLUOperator(ActivationOperator):
         y.append_bp_cache(self.backward, {'x': x})
         return y
 
-    def backward(self, x: Tensor, y: Tensor) -> None:
+    @staticmethod
+    def backward(**kwargs: Tensor) -> None:
+        y = kwargs['y']
+        x = kwargs['x']
         x.grad += y.grad * (y.value > 0).astype(np.float32)
 
 
 class SigmoidOperator(ActivationOperator):
     """Sigmoid 算子。"""
+
     @staticmethod
     def function(x: Tensor) -> Tensor:
         return Tensor(1 / (1 + np.exp(-x.value)))
@@ -112,5 +136,8 @@ class SigmoidOperator(ActivationOperator):
         y.append_bp_cache(self.backward, {'x': x})
         return y
 
-    def backward(self, x: Tensor, y: Tensor) -> None:
-        x.grad += y.grad * self.function(x).value * (1 - self.function(x).value)
+    @staticmethod
+    def backward(**kwargs) -> None:
+        y = kwargs['y']
+        x = kwargs['x']
+        x.grad += y.grad * SigmoidOperator.function(x).value * (1 - SigmoidOperator.function(x).value)

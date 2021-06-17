@@ -15,6 +15,7 @@ class Tensor(object):
         __grad: 该张量对应的梯度 (getter, setter)
         __bp_cache: 用于计算、缓存反向传播的结果，存储反向传播时所用的计算函数与该函数的参数
     """
+
     def __init__(self, value: np.ndarray) -> None:
         """初始化 Tensor 对象
 
@@ -26,7 +27,7 @@ class Tensor(object):
         """
         self.__value: np.ndarray = value
         self.__grad: np.ndarray = np.zeros(value.shape)
-        self.__bp_cache: List[Tuple[Callable[[Tensor, Optional[Tensor], Optional[str]], NoReturn],
+        self.__bp_cache: List[Tuple[Callable[[Dict[str, Tensor]], NoReturn],
                                     Dict[str, Tensor]]] = []
 
     @property
@@ -34,30 +35,34 @@ class Tensor(object):
         """获取 value 值方法。"""
         return self.__value
 
+    @value.setter
+    def value(self, value: np.ndarray) -> None:
+        self.__value = value
+
     @property
     def grad(self) -> np.ndarray:
         """获取 grad 值方法。"""
         return self.__grad
 
     @grad.setter
-    def grad(self, value: np.ndarray):
+    def grad(self, value: np.ndarray) -> None:
         """设置 grad 值方法"""
         self.__grad = value
 
-    def append_bp_cache(self, bp_func: Callable[[Tensor, Optional[Tensor], Optional[str]], NoReturn],
-                        bp_kwargs: Dict[str, Tensor]) -> None:
+    def append_bp_cache(self, back_func: Callable[[Dict[str, Tensor], Optional[str]], NoReturn],
+                        kwargs: Dict[str, Tensor]) -> None:
         """添加 bp_cache 方法。
 
         Args:
-            bp_func: 反向传播所用函数，
-            bp_kwargs: bp_func 的参数
+            back_func: 反向传播所用函数，
+            kwargs: bp_func 的参数
         """
-        self.__bp_cache.append((bp_func, bp_kwargs))
+        self.__bp_cache.append((back_func, kwargs))
 
     def backward(self) -> None:
         """递归计算反向传播结果。"""
         for back_func, kwargs in self.__bp_cache:
-            back_func(self, **kwargs)
+            back_func(y=self, **kwargs)
             for name, t in kwargs.items():
                 t.backward()
 
@@ -68,6 +73,6 @@ class Tensor(object):
             for name, t in kwargs.items():
                 t.zero_grad()
 
-    def __str__(self):
-        return f'Value:{str(self.__value)}\nGradient:${str(self.__grad)}'
+    def __str__(self) -> str:
+        return f'Value:{str(self.__value)}\nGradient:{str(self.__grad)}'
 
