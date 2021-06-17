@@ -12,9 +12,9 @@ class Operator(metaclass=ABCMeta):
     """
 
     def args(self):
-        """获取模型全部参数方法。
+        """获取算子全部参数方法。
 
-        参数即为张量的梯度，于是递归获取每个算子对应的梯度即可。
+        获取当前算子所含的全部张量即可。
         """
         res = []
         for name in vars(self).keys():
@@ -34,7 +34,7 @@ class Operator(metaclass=ABCMeta):
         Returns:
             计算得到的结果张量。
         """
-        pass
+        raise NotImplementedError()
 
     @staticmethod
     @abstractmethod
@@ -47,7 +47,7 @@ class Operator(metaclass=ABCMeta):
         Args:
             kwargs: 反向传播所用参数
         """
-        pass
+        raise NotImplementedError()
 
 
 class LinearOperator(Operator):
@@ -93,16 +93,7 @@ class ActivationOperator(Operator):
     @abstractmethod
     def function(x: Tensor) -> Tensor:
         """计算张量经过激活函数后的值"""
-        pass
-
-    @abstractmethod
-    def forward(self, x: Tensor) -> Tensor:
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def backward(**kwargs: Tensor) -> None:
-        pass
+        raise NotImplementedError()
 
 
 class ReLUOperator(ActivationOperator):

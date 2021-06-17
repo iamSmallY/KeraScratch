@@ -20,7 +20,7 @@ class Loss(metaclass=ABCMeta):
         Returns:
             f(x, target).
         """
-        pass
+        raise NotImplementedError()
 
     @staticmethod
     @abstractmethod
@@ -30,7 +30,7 @@ class Loss(metaclass=ABCMeta):
         Args:
             kwargs: 反向传播函数所用参数
         """
-        pass
+        raise NotImplementedError()
 
 
 class CrossEntropyLoss(Loss):

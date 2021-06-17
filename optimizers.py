@@ -15,7 +15,7 @@ class Optimizer(metaclass=ABCMeta):
 
         在反向传播完成后更新模型中各张量的值。
         """
-        pass
+        raise NotImplementedError()
 
 
 class SGD(Optimizer):

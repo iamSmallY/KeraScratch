@@ -42,7 +42,7 @@ class Model(metaclass=ABCMeta):
         Returns:
             由训练集以及验证集的每轮准确率 accuracy 对应的元组及每轮损失值 loss 对应的元组所组成的字典
         """
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def predict(self, data: Tensor) -> Tensor:
@@ -54,7 +54,7 @@ class Model(metaclass=ABCMeta):
         Returns:
             预测的结果张量
         """
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def evaluate(self, data: List[List[Tensor]]) -> Dict[str, float]:
@@ -68,7 +68,7 @@ class Model(metaclass=ABCMeta):
         Returns:
             该组数据预测结果的正确率与损失值，
         """
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def add(self, operator: Operator) -> None:
@@ -77,7 +77,7 @@ class Model(metaclass=ABCMeta):
         Args:
             operator: 新算子
         """
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def compile(self, loss: Loss, optimizer: Optimizer) -> None:
@@ -89,7 +89,7 @@ class Model(metaclass=ABCMeta):
             loss: 损失函数计算对象
             optimizer: 优化器对象
         """
-        pass
+        raise NotImplementedError()
 
 
 class Sequential(Model):
