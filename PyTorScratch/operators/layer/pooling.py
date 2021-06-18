@@ -35,7 +35,7 @@ class MeanPoolingOperator(PoolingOperator):
     def forward(self, x: Tensor, **kwargs) -> Tensor:
         out = x.value.reshape((x.value.shape[0], x.value.shape[1] // self.__size, self.__size,
                               x.value.shape[2] // self.__size, self.__size, x.value.shape[3]))
-        return out.mean(axis=(2, 4))
+        return Tensor(out.mean(axis=(2, 4)))
 
     def backward(self, x: Tensor, y: Tensor, **kwargs) -> None:
         temp = y.grad / self.__size ** 2

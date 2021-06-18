@@ -30,42 +30,41 @@ class Conv2DOperator(Layer):
         self.__bias: Optional[Tensor] = None
 
     def zero_grad(self) -> None:
-        self.__filter.grad = np.zeros(*self.__filter.grad.shape)
-        self.__bias.grad = np.zeros(*self.__bias.grad.shape)
+        self.__filter.grad = np.zeros(self.__filter.grad.shape)
+        self.__bias.grad = np.zeros(self.__bias.grad.shape)
 
     def forward(self, x: Tensor, **kwargs) -> Tensor:
         if self.__filter is None:
-            kernel_shape = self.__kernel_size, self.__kernel_size, x.value.shape[-1], self.__out_channel
+            kernel_shape = self.__out_channel, self.__kernel_size, self.__kernel_size, x.value.shape[-1]
             self.__filter = Tensor(np.random.randn(*kernel_shape) *
                                    (2 / reduce(lambda _x, _y: _x * _y, kernel_shape[:-1]) ** 0.5))
             self.__bias = Tensor(np.zeros(self.__out_channel))
 
         x.value = self.padding(x.value)
         x_split = self.__split_by_strides(x.value)
-        a = np.tensordot(x_split, self.__filter.value, axes=[(3, 4, 5), (0, 1, 2)]) + self.__bias.value
+        a = np.tensordot(x_split, self.__filter.value, axes=[(3, 4, 5), (1, 2, 3)]) + self.__bias.value
         return Tensor(a)
 
     def backward(self, x: Tensor, y: Tensor, **kwargs) -> None:
         batch_size = y.grad.shape[0]
         x_split = self.__split_by_strides(x.value)
         self.__filter.grad = np.tensordot(y.grad, x_split, [(0, 1, 2), (0, 1, 2)]) / batch_size
-        self.__bias.grad = np.reshape(y.grad, [batch_size, -1, self.__kernel_size]).sum(axis=(0, 1)) / batch_size
+        self.__bias.grad = np.reshape(y.grad, [batch_size, -1, self.__out_channel]).sum(axis=(0, 1)) / batch_size
 
-        y_pad = np.copy(y.grad)
         if self.__strides > 1:
-            temp = np.zeros(*y.grad.shape)
+            temp = np.zeros(y.grad.shape)
             temp[:, ::self.__strides, ::self.__strides, :] = y.grad
-            y_pad = temp
-        y_pad = self.padding(y_pad, False)
+            y.grad = temp
+        y_pad = self.padding(y.grad, False)
         filter_rot = self.__filter.value[:, ::-1, ::-1, :].swapaxes(0, 3)
         y_split = self.__split_by_strides(y_pad)
-        x.grad += np.tensordot(y_split, filter_rot, axes=[(3, 4, 5), (0, 1, 2)])
+        x.grad += np.tensordot(y_split, filter_rot, axes=[(3, 4, 5), (1, 2, 3)])
 
     def padding(self, x: np.ndarray, forward=True) -> np.ndarray:
         """对输入矩阵进行填充方法。"""
         p = self.__kernel_size // 2 if self.__padding == 'same' else self.__kernel_size - 1
         if forward:
-            return x if self.__padding == 'VALID' else np.pad(x, ((0, 0), (p, p), (p, p), (0, 0)), 'constant')
+            return x if self.__padding == 'valid' else np.pad(x, ((0, 0), (p, p), (p, p), (0, 0)), 'constant')
         else:
             return np.pad(x, ((0, 0), (p, p), (p, p), (0, 0)), 'constant')
 
