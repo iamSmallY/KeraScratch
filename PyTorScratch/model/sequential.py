@@ -38,7 +38,7 @@ class SequentialModel(Model):
                 'accuracy': [],
                 'loss': []
             }
-        for _ in range(epoch):
+        for i in range(epoch):
             temp_train_acc, temp_train_loss = [], []
             temp_val_acc, temp_val_loss = [], []
             for data in train_data:
@@ -54,9 +54,14 @@ class SequentialModel(Model):
 
             res['train']['accuracy'].append(np.mean(np.array(temp_train_acc)))
             res['train']['loss'].append(np.mean(np.array(temp_train_loss)))
+            string = f'epoch: {i}/{epoch}, train_acc: {np.mean(np.array(temp_train_acc))}  ' \
+                     f'train_loss: {np.mean(np.array(temp_train_loss))}'
             if val_data is not None:
                 res['val']['accuracy'].append(np.mean(np.array(temp_val_acc)))
                 res['val']['loss'].append(np.mean(np.array(temp_val_loss)))
+                string += f', test_acc: {np.mean(np.array(temp_val_acc))}, ' \
+                          f'test_loss: {np.mean(np.array(temp_val_loss))}'
+            print(string)
         return res
 
     def predict(self, data: np.ndarray) -> np.ndarray:
