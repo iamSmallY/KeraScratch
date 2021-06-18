@@ -46,15 +46,15 @@ class Conv2DOperator(Layer):
         return Tensor(a)
 
     def backward(self, x: Tensor, y: Tensor, **kwargs) -> None:
-        batch_size = y.value.shape[0]
+        batch_size = y.grad.shape[0]
         x_split = self.__split_by_strides(x.value)
-        self.__filter.grad = np.tensordot(y.value, x_split, [(0, 1, 2), (0, 1, 2)]) / batch_size
-        self.__bias.grad = np.reshape(y.value, [batch_size, -1, self.__kernel_size]).sum(axis=(0, 1)) / batch_size
+        self.__filter.grad = np.tensordot(y.grad, x_split, [(0, 1, 2), (0, 1, 2)]) / batch_size
+        self.__bias.grad = np.reshape(y.grad, [batch_size, -1, self.__kernel_size]).sum(axis=(0, 1)) / batch_size
 
-        y_pad = np.copy(y.value)
+        y_pad = np.copy(y.grad)
         if self.__strides > 1:
-            temp = np.zeros(*y.value.shape)
-            temp[:, ::self.__strides, ::self.__strides, :] = y.value
+            temp = np.zeros(*y.grad.shape)
+            temp[:, ::self.__strides, ::self.__strides, :] = y.grad
             y_pad = temp
         y_pad = self.padding(y_pad, False)
         filter_rot = self.__filter.value[:, ::-1, ::-1, :].swapaxes(0, 3)

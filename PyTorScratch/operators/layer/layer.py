@@ -8,4 +8,4 @@ class Layer(Operator):
     @abstractmethod
     def zero_grad(self) -> None:
         """清空自身参数的缓存梯度方法。"""
-        pass
+        raise NotImplemented()
