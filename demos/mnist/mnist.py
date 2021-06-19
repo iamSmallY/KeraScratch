@@ -16,7 +16,6 @@ def get_images(path, split=0):
     if split == 0:
         return data
     shuffle(data)
-    # 性能原因仅选取数据集中的 1% 进行训练测试
     return data[:int(split*len(data))], data[int(split*len(data)):]
 
 
