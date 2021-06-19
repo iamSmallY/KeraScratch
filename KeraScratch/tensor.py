@@ -47,7 +47,7 @@ class Tensor(object):
         self.__grad = np.copy(value)
 
     def zero_grad(self) -> None:
-        """递归地清空已有梯度。"""
+        """清空已有梯度。"""
         self.__grad = np.zeros(self.__grad.shape)
 
     def __str__(self) -> str:
