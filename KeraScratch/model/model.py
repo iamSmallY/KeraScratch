@@ -3,9 +3,9 @@ from typing import Dict, List
 
 import numpy as np
 
-from PyTorScratch.operators import Operator
-from PyTorScratch.optimizers import Optimizer
-from PyTorScratch.tensor import Tensor
+from KeraScratch.operators import Operator
+from KeraScratch.optimizers import Optimizer
+from KeraScratch.tensor import Tensor
 
 
 class Model(metaclass=ABCMeta):

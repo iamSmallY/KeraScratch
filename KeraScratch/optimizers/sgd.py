@@ -2,7 +2,7 @@ import numpy as np
 from typing import List
 
 from .optimizers import Optimizer
-from PyTorScratch.tensor import Tensor
+from KeraScratch.tensor import Tensor
 
 
 class SGD(Optimizer):

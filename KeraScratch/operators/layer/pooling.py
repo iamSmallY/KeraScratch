@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
 from .layer import Layer
-from PyTorScratch.tensor import Tensor
+from KeraScratch.tensor import Tensor
 
 
 class PoolingOperator(Layer, metaclass=ABCMeta):

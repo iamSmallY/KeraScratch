@@ -1,8 +1,8 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
-from PyTorScratch import model, optimizers
-from PyTorScratch.operators import activation, layer, loss
+from KeraScratch import model, optimizers
+from KeraScratch.operators import activation, layer, loss
 
 train_data = [
     [np.array([[0, 0]]), np.array([0])],

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from PyTorScratch.operators import Operator
+from KeraScratch.operators import Operator
 
 
 class Layer(Operator):

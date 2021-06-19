@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
-from PyTorScratch.operators.operators import Operator
-from PyTorScratch.tensor import Tensor
+from KeraScratch.operators.operators import Operator
+from KeraScratch.tensor import Tensor
 
 
 class ActivationOperator(Operator):

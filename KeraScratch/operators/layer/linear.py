@@ -2,7 +2,7 @@ import numpy as np
 from typing import Optional
 
 from .layer import Layer
-from PyTorScratch.tensor import Tensor
+from KeraScratch.tensor import Tensor
 
 
 class LinearOperator(Layer):

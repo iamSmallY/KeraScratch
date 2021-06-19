@@ -1,7 +1,7 @@
 import numpy as np
 
 from .loss import Loss
-from PyTorScratch.tensor import Tensor
+from KeraScratch.tensor import Tensor
 
 
 class CrossEntropyLoss(Loss):

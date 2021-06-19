@@ -1,7 +1,7 @@
 import numpy as np
 
 from .layer import Layer
-from PyTorScratch.tensor import Tensor
+from KeraScratch.tensor import Tensor
 
 
 class FlattenOperator(Layer):

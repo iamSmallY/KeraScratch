@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from PyTorScratch.tensor import Tensor
+from KeraScratch.tensor import Tensor
 
 
 class Operator(metaclass=ABCMeta):

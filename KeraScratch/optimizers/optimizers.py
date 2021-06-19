@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import List
 
-from PyTorScratch.tensor import Tensor
+from KeraScratch.tensor import Tensor
 
 
 class Optimizer(metaclass=ABCMeta):

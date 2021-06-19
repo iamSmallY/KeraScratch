@@ -3,9 +3,9 @@ from typing import Dict, List, Optional
 import numpy as np
 
 from .model import Model
-from PyTorScratch.operators import layer, loss, Operator
-from PyTorScratch.optimizers import Optimizer
-from PyTorScratch.tensor import Tensor
+from KeraScratch.operators import layer, loss, Operator
+from KeraScratch.optimizers import Optimizer
+from KeraScratch.tensor import Tensor
 
 
 class SequentialModel(Model):

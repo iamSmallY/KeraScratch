@@ -2,8 +2,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 from random import shuffle
 
-from PyTorScratch import model, optimizers
-from PyTorScratch.operators import activation, layer, loss
+from KeraScratch import model, optimizers
+from KeraScratch.operators import activation, layer, loss
 
 
 def get_images(path, split=0):
