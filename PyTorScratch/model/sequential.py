@@ -54,7 +54,7 @@ class SequentialModel(Model):
 
             res['train']['accuracy'].append(np.mean(np.array(temp_train_acc)))
             res['train']['loss'].append(np.mean(np.array(temp_train_loss)))
-            string = f'epoch: {i}/{epoch}, train_acc: {np.mean(np.array(temp_train_acc))}  ' \
+            string = f'epoch: {i + 1}/{epoch}, train_acc: {np.mean(np.array(temp_train_acc))}  ' \
                      f'train_loss: {np.mean(np.array(temp_train_loss))}'
             if val_data is not None:
                 res['val']['accuracy'].append(np.mean(np.array(temp_val_acc)))

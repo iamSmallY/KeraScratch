@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 import numpy as np
 
 from PyTorScratch import model, optimizers
@@ -18,9 +19,24 @@ md = model.SequentialModel([
 ])
 md.compile(optimizers.SGD(learning_rate=1e-1, momentum=0))
 
-history = md.fit(train_data, epoch=5000)
+epoch = 3000
+history = md.fit(train_data, epoch=epoch)
 print(history['train'])
 
 for data in train_data:
     x, _ = data
     print(md.predict(x))
+
+x_range = range(epoch)
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(x_range, history['train']['accuracy'], label='accuracy')
+ax.set_ylabel('accuracy')
+ax.legend()
+
+ax2 = ax.twinx()
+ax2.plot(x_range, history['train']['loss'], 'r', label='loss')
+ax2.set_ylabel('loss')
+ax2.legend()
+
+plt.show()
