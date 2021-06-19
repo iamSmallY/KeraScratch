@@ -29,10 +29,6 @@ class Conv2DOperator(Layer):
         self.__filter: Optional[Tensor] = None
         self.__bias: Optional[Tensor] = None
 
-    def zero_grad(self) -> None:
-        self.__filter.grad = np.zeros(self.__filter.grad.shape)
-        self.__bias.grad = np.zeros(self.__bias.grad.shape)
-
     def forward(self, x: Tensor, **kwargs) -> Tensor:
         if self.__filter is None:
             kernel_shape = self.__out_channel, self.__kernel_size, self.__kernel_size, x.value.shape[-1]

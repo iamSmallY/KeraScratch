@@ -1,16 +1,8 @@
-from abc import ABCMeta
-
 from .layer import Layer
 from KeraScratch.tensor import Tensor
 
 
-class PoolingOperator(Layer, metaclass=ABCMeta):
-    """池化层抽象类，所有池化层步长（strides）默认为池化大小。"""
-    def zero_grad(self) -> None:
-        pass
-
-
-class MaxPoolingOperator(PoolingOperator):
+class MaxPoolingOperator(Layer):
     """最大池化算子。"""
     def __init__(self, size: int):
         self.__size = size
@@ -27,7 +19,7 @@ class MaxPoolingOperator(PoolingOperator):
         x.grad += y.grad.repeat(self.__size, axis=1).repeat(self.__size, axis=2) * self.__index
 
 
-class MeanPoolingOperator(PoolingOperator):
+class MeanPoolingOperator(Layer):
     """均值池化算子。"""
     def __init__(self, size):
         self.__size = size

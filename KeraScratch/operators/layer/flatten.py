@@ -1,13 +1,9 @@
-import numpy as np
-
 from .layer import Layer
 from KeraScratch.tensor import Tensor
 
 
 class FlattenOperator(Layer):
     """拉平算子。"""
-    def zero_grad(self) -> None:
-        pass
 
     def forward(self, x: Tensor, **kwargs) -> Tensor:
         out_dim = 1
