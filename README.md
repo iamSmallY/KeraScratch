@@ -1,4 +1,4 @@
-# 自制垃圾版 PyTorch
+# 自制垃圾版 Keras
 
 此项目用于 [ECNU](https://www.ecnu.edu.cn/) 计算机科学与技术系优化理论及方法课大作业。
 
