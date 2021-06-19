@@ -6,7 +6,7 @@ from KeraScratch.tensor import Tensor
 
 
 class LinearOperator(Layer):
-    """全连接层。"""
+    """全连接算子。"""
 
     def __init__(self, out_dim: int) -> None:
         """初始化全连接层方法。
